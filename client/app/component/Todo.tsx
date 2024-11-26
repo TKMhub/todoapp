@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import { TodoType } from "../types";
+import useSWR from "swr";
+
+async function fetcher(key: string) {
+  return fetch(key).then((res) => res.json());
+}
 
 type TodoProps = {
   todo: TodoType;
@@ -9,8 +14,32 @@ const Todo = ({ todo }: TodoProps) => {
   const [isEditing, setIsEdting] = useState<boolean>(false);
   const [editedTitle, setEditedTitle] = useState<string>(todo.title);
 
-  const hundleEdit = () => {
+  const { data, isLoading, error, mutate } = useSWR(
+    "http://localhost:8080/allTodos",
+    fetcher
+  );
+
+  const hundleEdit = async () => {
     setIsEdting(!isEditing);
+
+    console.log("isEditing", isEditing);
+    if (isEditing) {
+      const response = await fetch(
+        `http://localhost:8080/edintTodo/${todo.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: editedTitle, // 期待するキー名を確認
+          }),
+        }
+      );
+      if (response.ok) {
+        const editedTodo = await response.json();
+        mutate([...data, editedTodo]);
+        setEditedTitle("");
+      }
+    }
   };
 
   return (
