@@ -3,6 +3,7 @@ import Todo from "./component/Todo";
 import useSWR from "swr";
 import { TodoType } from "./types";
 import { useRef } from "react";
+import { API_URL } from "@/constants/url";
 
 async function fetcher(key: string) {
   return fetch(key).then((res) => res.json());
@@ -17,7 +18,7 @@ export default function Home() {
 
   // SWRによるキャッシュ
   const { data, isLoading, error, mutate } = useSWR(
-    "http://localhost:8080/allTodos",
+    `${API_URL}/allTodos`,
     fetcher
   );
 
@@ -26,7 +27,7 @@ export default function Home() {
   const hundleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const response = await fetch(`http://localhost:8080/createTodo`, {
+    const response = await fetch(`${API_URL}/createTodo`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
